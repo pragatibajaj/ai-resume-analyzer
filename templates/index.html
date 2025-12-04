@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Analyzer & Placement Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 AI Resume Analyzer</h1>
+            <p class="subtitle">Get instant insights on how well your resume matches the job</p>
+            {% if user_email %}
+            <div class="user-info-bar">
+                <span class="user-email">👤 {{ user_email }}</span>
+                <a href="/logout" class="logout-btn">🚪 Logout</a>
+            </div>
+            {% endif %}
+        </header>
+
+        <div class="card">
+            <form action="/analyze" method="POST" enctype="multipart/form-data" id="analyzeForm">
+                <div class="form-group">
+                    <label for="resume">
+                        <span class="label-icon">📄</span>
+                        Upload Your Resume
+                    </label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="resume" name="resume" accept=".pdf,.txt,.docx" required>
+                        <span class="file-input-text">Choose PDF, TXT, or DOCX file</span>
+                    </div>
+                    <small>Supported formats: PDF, TXT, DOCX (Max 16MB)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="job_description">
+                        <span class="label-icon">💼</span>
+                        Job Description
+                    </label>
+                    <textarea 
+                        id="job_description" 
+                        name="job_description" 
+                        rows="10" 
+                        placeholder="Paste the complete job description here...&#10;&#10;Include:&#10;- Required skills&#10;- Responsibilities&#10;- Qualifications&#10;- Experience requirements"
+                        required
+                    ></textarea>
+                    <small>Paste the full job posting for better analysis</small>
+                </div>
+
+                <button type="submit" class="btn-primary">
+                    <span>🔍 Analyze Resume</span>
+                </button>
+            </form>
+
+            <div class="divider-text">OR</div>
+
+            <a href="/interview" class="btn-secondary" style="display: block; text-align: center; text-decoration: none; margin-top: 20px;">
+                <span>🎤 Practice Interview</span>
+            </a>
+        </div>
+
+        <div class="features">
+            <h2>What You'll Get</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <h3>Match Score</h3>
+                    <p>See how well your resume aligns with the job</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Missing Skills</h3>
+                    <p>Identify skills you need to add</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">💡</div>
+                    <h3>Suggestions</h3>
+                    <p>Get actionable improvement tips</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔑</div>
+                    <h3>Keywords</h3>
+                    <p>Important terms to include</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">❓</div>
+                    <h3>Interview Prep</h3>
+                    <p>10 potential interview questions</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Instant Results</h3>
+                    <p>Get analysis in seconds</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2024 AI Resume Analyzer | Powered by Machine Learning</p>
+        </footer>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('resume');
+        const fileInputText = document.querySelector('.file-input-text');
+        
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                fileInputText.textContent = e.target.files[0].name;
+                fileInputText.style.color = '#2563eb';
+            } else {
+                fileInputText.textContent = 'Choose PDF, TXT, or DOCX file';
+                fileInputText.style.color = '#6b7280';
+            }
+        });
+
+        document.getElementById('analyzeForm').addEventListener('submit', function(e) {
+            const button = this.querySelector('button[type="submit"]');
+            button.innerHTML = '<span>⏳ Analyzing...</span>';
+            button.disabled = true;
+        });
+    </script>
+</body>
+</html>

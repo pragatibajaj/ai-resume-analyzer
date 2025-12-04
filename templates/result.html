@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results - AI Resume Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Analysis Results</h1>
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+                <a href="/" class="back-link">← Analyze Another Resume</a>
+                <a href="/logout" class="back-link">🚪 Logout</a>
+            </div>
+        </header>
+
+        <!-- Match Percentage -->
+        <div class="card result-card">
+            <div class="match-score-section">
+                <h2>🎯 Resume Match Score</h2>
+                
+                <!-- Circular Progress Chart -->
+                <div class="match-circle">
+                    <svg width="220" height="220" viewBox="0 0 220 220">
+                        <!-- Background circle -->
+                        <circle cx="110" cy="110" r="95" fill="none" stroke="#e5e7eb" stroke-width="15"/>
+                        <!-- Progress circle -->
+                        <circle 
+                            id="progress-circle"
+                            cx="110" cy="110" r="95" 
+                            fill="none" 
+                            stroke="{% if match_percentage >= 70 %}#10b981{% elif match_percentage >= 50 %}#f59e0b{% else %}#ef4444{% endif %}" 
+                            stroke-width="15"
+                            stroke-dasharray="0 596.9"
+                            stroke-linecap="round"
+                            transform="rotate(-90 110 110)"
+                            style="transition: stroke-dasharray 2s ease-out;"/>
+                    </svg>
+                    <div class="match-percentage-wrapper">
+                        <div class="match-percentage" id="percentage-counter">0%</div>
+                        <div class="match-label">Match</div>
+                    </div>
+                </div>
+
+                <!-- Status Message -->
+                <div class="match-status-box {% if match_percentage >= 70 %}status-good-bg{% elif match_percentage >= 50 %}status-medium-bg{% else %}status-poor-bg{% endif %}">
+                    {% if match_percentage >= 70 %}
+                        <span class="status-icon">✅</span>
+                        <div>
+                            <strong>Excellent Match!</strong>
+                            <p>Your resume aligns well with the job requirements.</p>
+                        </div>
+                    {% elif match_percentage >= 50 %}
+                        <span class="status-icon">⚠️</span>
+                        <div>
+                            <strong>Good Match</strong>
+                            <p>Consider adding more relevant keywords to improve your score.</p>
+                        </div>
+                    {% else %}
+                        <span class="status-icon">❌</span>
+                        <div>
+                            <strong>Needs Improvement</strong>
+                            <p>Your resume needs significant updates to match this position.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Progress Bar Alternative -->
+                <div class="progress-bar-container">
+                    <div class="progress-labels">
+                        <span>0%</span>
+                        <span>50%</span>
+                        <span>100%</span>
+                    </div>
+                    <div class="progress-bar-track">
+                        <div 
+                            class="progress-bar-fill {% if match_percentage >= 70 %}progress-good{% elif match_percentage >= 50 %}progress-medium{% else %}progress-poor{% endif %}"
+                            id="progress-bar"
+                            style="width: 0%;">
+                        </div>
+                    </div>
+                    <div class="progress-markers">
+                        <span class="marker marker-poor" style="left: 0%;">Poor</span>
+                        <span class="marker marker-medium" style="left: 50%;">Good</span>
+                        <span class="marker marker-excellent" style="left: 70%;">Excellent</span>
+                    </div>
+                </div>
+
+                <!-- Score Breakdown -->
+                <div class="score-breakdown">
+                    <div class="breakdown-item">
+                        <span class="breakdown-icon">📝</span>
+                        <div class="breakdown-content">
+                            <div class="breakdown-label">Skills Match</div>
+                            <div class="breakdown-value">{{ resume_skills|length }} / {{ (resume_skills|length + missing_skills|length) }} found</div>
+                        </div>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-icon">🔑</span>
+                        <div class="breakdown-content">
+                            <div class="breakdown-label">Keywords</div>
+                            <div class="breakdown-value">{{ keywords|length }} identified</div>
+                        </div>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-icon">⚡</span>
+                        <div class="breakdown-content">
+                            <div class="breakdown-label">Overall Score</div>
+                            <div class="breakdown-value">{{ match_percentage }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Your Skills -->
+        <div class="card">
+            <h2>✅ Your Skills Found</h2>
+            {% if resume_skills %}
+                <div class="skills-container">
+                    {% for skill in resume_skills %}
+                        <span class="skill-tag skill-found">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-state">No specific skills detected in your resume.</p>
+            {% endif %}
+        </div>
+
+        <!-- Missing Skills -->
+        <div class="card">
+            <h2>⚠️ Missing Skills</h2>
+            {% if missing_skills %}
+                <p class="section-description">These skills are mentioned in the job description but not found in your resume:</p>
+                <div class="skills-container">
+                    {% for skill in missing_skills %}
+                        <span class="skill-tag skill-missing">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-state">🎉 Great! You have all the key skills mentioned in the job description.</p>
+            {% endif %}
+        </div>
+
+        <!-- Important Keywords -->
+        <div class="card">
+            <h2>🔑 Important Keywords</h2>
+            <p class="section-description">Make sure these keywords appear in your resume:</p>
+            <div class="keywords-container">
+                {% for keyword in keywords %}
+                    <span class="keyword-tag">{{ keyword }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Improvement Suggestions -->
+        <div class="card">
+            <h2>💡 Improvement Suggestions</h2>
+            <ul class="suggestions-list">
+                {% for suggestion in suggestions %}
+                    <li>{{ suggestion }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Interview Questions -->
+        <div class="card">
+            <h2>❓ Potential Interview Questions</h2>
+            <p class="section-description">Prepare for these questions based on the job requirements:</p>
+            <ol class="questions-list">
+                {% for question in interview_questions %}
+                    <li>{{ question }}</li>
+                {% endfor %}
+            </ol>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="/" class="btn-secondary" style="text-decoration: none;">🔄 Analyze Another Resume</a>
+            <a href="/interview" class="btn-secondary" style="text-decoration: none;">🎤 Practice Interview</a>
+            <button onclick="window.print()" class="btn-secondary">🖨️ Print Results</button>
+        </div>
+
+        <footer>
+            <p>© 2024 AI Resume Analyzer | Powered by Machine Learning</p>
+        </footer>
+    </div>
+
+    <script>
+        // Animate visualizations on load
+        window.addEventListener('load', function() {
+            const matchPercentage = parseFloat('{{ match_percentage }}');
+            
+            // Animate circular progress
+            const progressCircle = document.getElementById('progress-circle');
+            const circumference = 596.9; // 2 * PI * 95
+            const offset = circumference - (circumference * matchPercentage / 100);
+            
+            setTimeout(function() {
+                progressCircle.style.strokeDasharray = (circumference * matchPercentage / 100) + ' ' + circumference;
+            }, 100);
+            
+            // Animate percentage counter
+            const counter = document.getElementById('percentage-counter');
+            let currentPercentage = 0;
+            const increment = matchPercentage / 100;
+            const duration = 2000; // 2 seconds
+            const stepTime = duration / (matchPercentage / increment);
+            
+            const counterInterval = setInterval(function() {
+                currentPercentage += increment;
+                if (currentPercentage >= matchPercentage) {
+                    currentPercentage = matchPercentage;
+                    clearInterval(counterInterval);
+                }
+                counter.textContent = Math.round(currentPercentage) + '%';
+            }, stepTime);
+            
+            // Animate progress bar
+            const progressBar = document.getElementById('progress-bar');
+            setTimeout(function() {
+                progressBar.style.width = matchPercentage + '%';
+            }, 300);
+        });
+    </script>
+</body>
+</html>

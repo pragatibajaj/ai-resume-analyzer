@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview Practice - AI Resume Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎤 AI Interview Practice</h1>
+            <p class="subtitle">Practice your interview skills with AI-powered feedback</p>
+            <div class="user-info-bar">
+                <span class="user-email">👤 {{ session.get('user_email', 'Guest') }}</span>
+                <div style="display: flex; gap: 10px;">
+                    <a href="/" class="logout-btn">🏠 Home</a>
+                    <a href="/logout" class="logout-btn">🚪 Logout</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Job Role Selection -->
+        <div class="card" id="role-selection" style="display: block;">
+            <h2>Select Your Target Role</h2>
+            <p class="section-description">Choose a job role to start practicing interview questions</p>
+            
+            <div class="role-grid">
+                <button class="role-card" onclick="startInterview('Software Engineer')">
+                    <span class="role-icon">💻</span>
+                    <h3>Software Engineer</h3>
+                    <p>Full-stack development, algorithms, system design</p>
+                </button>
+                
+                <button class="role-card" onclick="startInterview('Data Scientist')">
+                    <span class="role-icon">📊</span>
+                    <h3>Data Scientist</h3>
+                    <p>ML, statistics, data analysis, Python</p>
+                </button>
+                
+                <button class="role-card" onclick="startInterview('Product Manager')">
+                    <span class="role-icon">📱</span>
+                    <h3>Product Manager</h3>
+                    <p>Strategy, roadmap, stakeholder management</p>
+                </button>
+                
+                <button class="role-card" onclick="startInterview('Frontend Developer')">
+                    <span class="role-icon">🎨</span>
+                    <h3>Frontend Developer</h3>
+                    <p>React, JavaScript, CSS, UI/UX</p>
+                </button>
+                
+                <button class="role-card" onclick="startInterview('DevOps Engineer')">
+                    <span class="role-icon">⚙️</span>
+                    <h3>DevOps Engineer</h3>
+                    <p>CI/CD, Docker, Kubernetes, AWS</p>
+                </button>
+                
+                <button class="role-card" onclick="startInterview('Business Analyst')">
+                    <span class="role-icon">📈</span>
+                    <h3>Business Analyst</h3>
+                    <p>Requirements, analytics, stakeholders</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Interview Chat Interface -->
+        <div class="card" id="interview-chat" style="display: none;">
+            <div class="interview-header">
+                <h2 id="selected-role">Interview Practice</h2>
+                <button onclick="resetInterview()" class="btn-secondary" style="padding: 8px 16px; font-size: 0.9rem;">
+                    🔄 Change Role
+                </button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-container" id="chat-messages">
+                <div class="chat-message ai-message">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <strong>AI Interviewer</strong>
+                        <p>Welcome! I'll be conducting your interview today. Let's begin with the first question.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="chat-input-area">
+                <textarea 
+                    id="user-answer" 
+                    placeholder="Type your answer here..." 
+                    rows="3"
+                    onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); submitAnswer(); }"
+                ></textarea>
+                <button onclick="submitAnswer()" class="btn-primary" id="submit-btn">
+                    <span>📤 Submit Answer</span>
+                </button>
+            </div>
+
+            <!-- Progress Indicator -->
+            <div class="interview-progress">
+                <span id="question-counter">Question 1 of 5</span>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2024 AI Resume Analyzer | Powered by Machine Learning</p>
+        </footer>
+    </div>
+
+    <script>
+        let currentRole = '';
+        let questionCount = 0;
+        let maxQuestions = 5;
+        
+        // Interview questions database
+        const interviewQuestions = {
+            'Software Engineer': [
+                'Tell me about a challenging bug you fixed and how you approached it.',
+                'Explain the difference between SQL and NoSQL databases. When would you use each?',
+                'How do you ensure code quality in your projects?',
+                'Describe your experience with version control systems like Git.',
+                'What is your approach to learning new programming languages or frameworks?'
+            ],
+            'Data Scientist': [
+                'Explain the bias-variance tradeoff in machine learning.',
+                'How do you handle missing data in a dataset?',
+                'Describe a data science project you worked on from start to finish.',
+                'What is the difference between supervised and unsupervised learning?',
+                'How do you validate the performance of a machine learning model?'
+            ],
+            'Product Manager': [
+                'How do you prioritize features in a product roadmap?',
+                'Describe a time when you had to make a difficult product decision.',
+                'How do you gather and incorporate user feedback?',
+                'Explain how you would handle conflicting stakeholder requirements.',
+                'What metrics do you use to measure product success?'
+            ],
+            'Frontend Developer': [
+                'Explain the concept of virtual DOM in React.',
+                'How do you optimize website performance?',
+                'What is your approach to responsive web design?',
+                'Describe the difference between CSS Grid and Flexbox.',
+                'How do you ensure cross-browser compatibility?'
+            ],
+            'DevOps Engineer': [
+                'Explain the CI/CD pipeline and its benefits.',
+                'How do you handle infrastructure as code?',
+                'Describe your experience with containerization using Docker.',
+                'What monitoring tools have you used and why?',
+                'How do you approach system scalability and reliability?'
+            ],
+            'Business Analyst': [
+                'How do you gather business requirements from stakeholders?',
+                'Describe your experience with data analysis and reporting.',
+                'How do you handle conflicting requirements from different departments?',
+                'What tools do you use for business process modeling?',
+                'Explain how you measure the success of a business initiative.'
+            ]
+        };
+
+        function startInterview(role) {
+            currentRole = role;
+            questionCount = 0;
+            
+            document.getElementById('role-selection').style.display = 'none';
+            document.getElementById('interview-chat').style.display = 'block';
+            document.getElementById('selected-role').textContent = role + ' Interview';
+            
+            // Clear previous messages
+            const chatContainer = document.getElementById('chat-messages');
+            chatContainer.innerHTML = `
+                <div class="chat-message ai-message">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <strong>AI Interviewer</strong>
+                        <p>Welcome to your ${role} interview! I'll ask you ${maxQuestions} questions. Take your time to answer thoughtfully.</p>
+                    </div>
+                </div>
+            `;
+            
+            // Ask first question
+            setTimeout(() => askQuestion(), 1000);
+        }
+
+        function askQuestion() {
+            if (questionCount >= maxQuestions) {
+                endInterview();
+                return;
+            }
+            
+            const questions = interviewQuestions[currentRole];
+            const question = questions[questionCount];
+            
+            addMessage('ai', question);
+            updateProgress();
+            
+            // Enable input
+            document.getElementById('user-answer').disabled = false;
+            document.getElementById('submit-btn').disabled = false;
+        }
+
+        function submitAnswer() {
+            const answerInput = document.getElementById('user-answer');
+            const answer = answerInput.value.trim();
+            
+            if (!answer) {
+                alert('Please provide an answer before submitting.');
+                return;
+            }
+            
+            // Disable input while processing
+            answerInput.disabled = true;
+            document.getElementById('submit-btn').disabled = true;
+            
+            // Add user message
+            addMessage('user', answer);
+            answerInput.value = '';
+            
+            // Simulate AI feedback
+            setTimeout(() => {
+                provideFeedback(answer);
+            }, 1500);
+        }
+
+        function provideFeedback(answer) {
+            const feedbacks = [
+                "Great answer! You demonstrated good understanding of the concept. Your explanation was clear and well-structured.",
+                "Good response! You covered the key points. Consider adding more specific examples from your experience.",
+                "Solid answer! You showed technical knowledge. Try to elaborate more on the practical applications.",
+                "Nice work! Your answer shows good problem-solving skills. Adding metrics or results would strengthen it.",
+                "Excellent response! You provided concrete examples and showed deep understanding of the topic."
+            ];
+            
+            const feedback = feedbacks[Math.floor(Math.random() * feedbacks.length)];
+            addMessage('ai', feedback);
+            
+            questionCount++;
+            
+            if (questionCount < maxQuestions) {
+                setTimeout(() => {
+                    addMessage('ai', "Let's move to the next question.");
+                    setTimeout(() => askQuestion(), 1000);
+                }, 2000);
+            } else {
+                setTimeout(() => endInterview(), 2000);
+            }
+        }
+
+        function endInterview() {
+            const finalMessage = `
+                <div class="interview-complete">
+                    <h3>🎉 Interview Complete!</h3>
+                    <p>You've successfully completed all ${maxQuestions} questions for the ${currentRole} position.</p>
+                    <p><strong>Key Takeaways:</strong></p>
+                    <ul>
+                        <li>Practice makes perfect - keep refining your answers</li>
+                        <li>Use the STAR method (Situation, Task, Action, Result)</li>
+                        <li>Prepare specific examples from your experience</li>
+                        <li>Research the company and role thoroughly</li>
+                    </ul>
+                </div>
+            `;
+            
+            addMessage('ai', finalMessage);
+            
+            // Disable input
+            document.getElementById('user-answer').disabled = true;
+            document.getElementById('submit-btn').disabled = true;
+        }
+
+        function addMessage(type, content) {
+            const chatContainer = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${type}-message`;
+            
+            if (type === 'ai') {
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <strong>AI Interviewer</strong>
+                        <p>${content}</p>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <strong>You</strong>
+                        <p>${content}</p>
+                    </div>
+                    <div class="message-avatar">👤</div>
+                `;
+            }
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function updateProgress() {
+            document.getElementById('question-counter').textContent = 
+                `Question ${questionCount + 1} of ${maxQuestions}`;
+        }
+
+        function resetInterview() {
+            document.getElementById('interview-chat').style.display = 'none';
+            document.getElementById('role-selection').style.display = 'block';
+            currentRole = '';
+            questionCount = 0;
+        }
+    </script>
+</body>
+</html>
