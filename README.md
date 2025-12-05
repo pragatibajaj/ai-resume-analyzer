@@ -1,28 +1,24 @@
-AI Resume Analyzer 💼🤖
+# AI Resume Analyzer & Interview Practice Tool
 
-This is an AI powered Resume Analyzer and Interview Practice web application 
-built using Python and Flask. It helps users analyze how well their resume 
-matches a job description and also prepares them for potential interview questions.
+This is a web-based AI-powered Resume Analyzer built using Python and Flask.
 
-Features:
-- Upload resume (PDF / DOCX / TXT)
-- Paste Job Description
-- Get Resume Match Score
-- View Missing Skills & Keywords
-- Get AI-based Improvement Suggestions
-- Practice Interview Questions
+It allows users to:
+- Upload their resume (PDF/DOCX)
+- Paste a job description
+- Get a match score between resume and job
+- See missing skills and important keywords
+- Get improvement suggestions
+- Practice interview questions based on the job
 
-Technologies Used:
+Tech Stack:
 - Python
 - Flask
-- HTML, CSS, Bootstrap
-- Machine Learning (basic NLP)
-- JavaScript
+- HTML, CSS, JavaScript
+- Scikit-learn
+- NLTK
 
-How to Run Locally:
-1. Clone the repository
-2. Install requirements: pip install -r requirements.txt
-3. Run: python app.py
-4. Open in browser: http://127.0.0.1:5000
+Live Demo:
+https://ai-resume-analyzer-1-llgn.onrender.com/
 
-Created by: Pragati Bajaj
+This project was built by me as part of my learning journey in Web Development & AI.
+
